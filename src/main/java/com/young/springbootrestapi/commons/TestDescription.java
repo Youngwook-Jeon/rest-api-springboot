@@ -1,4 +1,4 @@
-package com.young.springbootrestapi.common;
+package com.young.springbootrestapi.commons;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
