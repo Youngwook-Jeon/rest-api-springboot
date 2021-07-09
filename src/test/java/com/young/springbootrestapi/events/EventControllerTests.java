@@ -1,6 +1,7 @@
 package com.young.springbootrestapi.events;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.young.springbootrestapi.common.TestDescription;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,7 @@ public class EventControllerTests {
     ObjectMapper objectMapper;
 
     @Test
+    @TestDescription("정상적으로 이벤트를 생성하는 테스트")
     public void createEvent() throws Exception {
         EventDto eventDto = EventDto.builder()
                 .name("Spring")
@@ -58,6 +60,7 @@ public class EventControllerTests {
     }
 
     @Test
+    @TestDescription("입력 받을 수 없는 값을 사용할 경우에 에러가 발생하는 테스트")
     public void createEvent_BadRequest() throws Exception {
         Event event = Event.builder()
                 .id(100)
@@ -81,6 +84,39 @@ public class EventControllerTests {
                 .accept(MediaTypes.HAL_JSON)
                 .content(objectMapper.writeValueAsString(event)))
                 .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @TestDescription("입력값이 비어있는 경우에 에러가 발생하는 테스트")
+    public void createEvent_Bad_Request_Empty_Input() throws Exception {
+        EventDto eventDto = EventDto.builder().build();
+
+        this.mockMvc.perform(post("/api/events")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(this.objectMapper.writeValueAsString(eventDto)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @TestDescription("입력값이 잘못된 경우에 에러가 발생하는 테스트")
+    public void createEvent_Bad_Request_Wrong_Input() throws Exception {
+        EventDto eventDto = EventDto.builder()
+                .name("Spring")
+                .description("REST API dev with Spring boot")
+                .beginEnrollmentDateTime(LocalDateTime.of(2021, 7, 5, 13, 30))
+                .closeEnrollmentDateTime(LocalDateTime.of(2021, 7, 6, 13, 30))
+                .beginEventDateTime(LocalDateTime.of(2021, 7, 10, 13, 30))
+                .endEventDateTime(LocalDateTime.of(2021, 7, 9, 13, 30))
+                .basePrice(10000)
+                .maxPrice(200)
+                .limitOfEnrollment(200)
+                .location("신촌 스터디 카페")
+                .build();
+
+        this.mockMvc.perform(post("/api/events")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(this.objectMapper.writeValueAsString(eventDto)))
                 .andExpect(status().isBadRequest());
     }
 }
