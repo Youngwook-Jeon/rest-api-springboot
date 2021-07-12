@@ -2,7 +2,9 @@ package com.young.springbootrestapi.events;
 
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
@@ -39,7 +41,14 @@ public class EventController {
         event.update();
         Event newEvent = this.eventRepository.save(event);
         // Location URI 만들기
-        URI createdUri = linkTo(EventController.class).slash(newEvent.getId()).toUri();
-        return ResponseEntity.created(createdUri).body(newEvent);
+        WebMvcLinkBuilder linkBuilder = linkTo(EventController.class).slash(newEvent.getId());
+        URI createdUri = linkBuilder.toUri();
+//        EventModel eventModel = new EventModel(event); // RepresentaionModel 객체 생성하여 진행하는 방법
+        EntityModel eventModel = EntityModel.of(newEvent); // EntityModel 객체 활용하는 방법
+        eventModel.add(linkTo(EventController.class).withRel("query-events"));
+        eventModel.add(linkBuilder.withSelfRel());
+        eventModel.add(linkBuilder.withRel("update-event"));
+//        return ResponseEntity.created(createdUri).body(eventModel);
+        return ResponseEntity.created(createdUri).body(eventModel);
     }
 }
